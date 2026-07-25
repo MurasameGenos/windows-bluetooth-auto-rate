@@ -65,6 +65,7 @@ foreach ($requiredFile in $requiredFiles) {
 }
 
 $allowedDirectories = @(
+    'Assets',
     'en-us',
     'ja-JP',
     'Microsoft.UI.Xaml',
