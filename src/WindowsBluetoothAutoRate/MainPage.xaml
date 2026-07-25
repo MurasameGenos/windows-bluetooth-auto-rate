@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="WindowsBluetoothAutoRate.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Spacing="4">
+                <TextBlock
+                    FontSize="28"
+                    FontWeight="SemiBold"
+                    Text="设备格式" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="按 Windows 音频端点 ID 记忆完整默认格式，设备重新接入时应用一次。"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <ToggleSwitch
+                x:Name="StartupToggle"
+                Grid.Column="1"
+                Header="开机启动"
+                Toggled="StartupToggle_Toggled" />
+        </Grid>
+
+        <InfoBar
+            x:Name="StatusBar"
+            Grid.Row="1"
+            Margin="0,16,0,12"
+            IsClosable="False"
+            IsOpen="True"
+            Message="正在读取设备…"
+            Severity="Informational" />
+
+        <ListView
+            x:Name="DeviceList"
+            Grid.Row="2"
+            ItemsSource="{x:Bind Devices}"
+            SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Margin" Value="0,0,0,10" />
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        Padding="16"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <Grid ColumnSpacing="14" RowSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel>
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding CurrentFormatText}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+
+                            <Border
+                                Grid.Column="1"
+                                Padding="8,3"
+                                VerticalAlignment="Center"
+                                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                CornerRadius="10">
+                                <TextBlock Text="{Binding ConnectionText}" />
+                            </Border>
+
+                            <ComboBox
+                                Grid.Column="2"
+                                MinWidth="245"
+                                Header="Windows 默认格式"
+                                DisplayMemberPath="DisplayText"
+                                ItemsSource="{Binding FormatOptions}"
+                                SelectedItem="{Binding SelectedFormat, Mode=TwoWay}" />
+
+                            <ToggleSwitch
+                                Grid.Column="3"
+                                VerticalAlignment="Center"
+                                Header="自动调整"
+                                IsOn="{Binding Enabled, Mode=TwoWay}" />
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="{Binding DeviceId}"
+                                TextTrimming="CharacterEllipsis" />
+
+                            <StackPanel
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                Grid.ColumnSpan="2"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button
+                                    Click="ApplyDevice_Click"
+                                    Content="立即应用"
+                                    Tag="{Binding}" />
+                                <Button
+                                    Click="ClearDevice_Click"
+                                    Content="清除配置"
+                                    Tag="{Binding}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Grid Grid.Row="3" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Click="Refresh_Click" Content="刷新设备" />
+                <Button Click="OpenSettingsFolder_Click" Content="打开设置目录" />
+                <Button Click="OpenLog_Click" Content="查看日志" />
+            </StackPanel>
+
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button Click="ResetAll_Click" Content="重置全部设置" />
+                <Button
+                    Click="SaveAll_Click"
+                    Content="保存全部"
+                    Style="{StaticResource AccentButtonStyle}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

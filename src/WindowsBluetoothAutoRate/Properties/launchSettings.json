@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WindowsBluetoothAutoRate (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "WindowsBluetoothAutoRate (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
