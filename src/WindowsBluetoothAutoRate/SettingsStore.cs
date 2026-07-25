@@ -147,8 +147,7 @@ internal static class SettingsStore
                 writable: true);
             if (enabled)
             {
-                var executable = Environment.ProcessPath ??
-                    throw new InvalidOperationException("无法确定程序路径。");
+                var executable = GetStartupExecutablePath();
                 run.SetValue(
                     StartupValueName,
                     $"\"{executable}\" --background",
@@ -212,6 +211,23 @@ internal static class SettingsStore
                     Environment.SpecialFolder.LocalApplicationData),
                 "WindowsBluetoothAutoRate");
         }
+    }
+
+    private static string GetStartupExecutablePath()
+    {
+        var executable = Environment.ProcessPath ??
+            throw new InvalidOperationException("无法确定程序路径。");
+        var applicationDirectory = Path.GetDirectoryName(executable);
+        var releaseDirectory = applicationDirectory is null
+            ? null
+            : Directory.GetParent(applicationDirectory)?.FullName;
+        var launcher = releaseDirectory is null
+            ? null
+            : Path.Combine(releaseDirectory, "WindowsBluetoothAutoRate.exe");
+
+        return launcher is not null && File.Exists(launcher)
+            ? launcher
+            : executable;
     }
 
     private static void Save(AppSettings settings)

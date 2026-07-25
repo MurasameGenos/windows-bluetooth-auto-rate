@@ -15,28 +15,6 @@ jobs:
           dotnet-version: 9.0.x
       - name: Build
         run: dotnet build .\WindowsBluetoothAutoRate.slnx -c Release
-      - name: Publish unpackaged x64 build
-        run: >-
-          dotnet publish
-          .\src\WindowsBluetoothAutoRate\WindowsBluetoothAutoRate.csproj
-          -c Release
-          -r win-x64
-          --self-contained true
-          -p:PublishSingleFile=false
-          -p:PublishReadyToRun=false
-          -o .\artifacts\windows-bluetooth-auto-rate-win-x64
-      - name: Verify WinUI publish resources
+      - name: Publish release layout
         shell: pwsh
-        run: |
-          $publish = '.\artifacts\windows-bluetooth-auto-rate-win-x64'
-          @(
-            'WindowsBluetoothAutoRate.exe',
-            'App.xbf',
-            'MainPage.xbf',
-            'MainWindow.xbf',
-            'WindowsBluetoothAutoRate.pri'
-          ) | ForEach-Object {
-            if (-not (Test-Path -LiteralPath (Join-Path $publish $_))) {
-              throw "Published app is missing $_"
-            }
-          }
+        run: .\scripts\Publish-Release.ps1

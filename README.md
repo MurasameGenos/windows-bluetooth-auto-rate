@@ -15,16 +15,18 @@
 - 支持开机启动、查看日志和重置全部设置。
 - 配置保存在独立 JSON 文件中，不再写入软件专用注册表项。
 - 关闭窗口后继续驻留系统托盘。
+- 发布包仅保留简体中文、繁体中文、英语和日语的 WinUI 语言资源。
 
 ## 下载与运行
 
 从 [Releases](../../releases/latest) 下载 `windows-bluetooth-auto-rate-win-x64.zip`。
 
 1. 将压缩包完整解压到一个固定目录。
-2. 运行 `WindowsBluetoothAutoRate.exe`。
-3. 不要只复制 EXE；WinUI 3、Windows App SDK 和 .NET 运行库以多个文件随程序分发。
+2. 运行根目录的 `WindowsBluetoothAutoRate.exe`。
+3. 不要删除或移动 `App` 目录；WinUI 3、Windows App SDK 和 .NET 运行库都收纳在其中。
 
 发布包为 Windows x64 自包含版本，无需单独安装 .NET 或 Windows App SDK 运行时。
+根目录的 EXE 是约 11 MB 的轻量启动器，实际程序、依赖和语言资源都位于 `App` 子目录。
 
 ## 设置与日志
 
@@ -61,13 +63,10 @@
 dotnet build .\WindowsBluetoothAutoRate.slnx -c Release
 ```
 
-生成多文件自包含发布目录：
+生成整理后的多文件自包含发布目录：
 
 ```powershell
-dotnet publish .\src\WindowsBluetoothAutoRate\WindowsBluetoothAutoRate.csproj `
-  -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=false `
-  -o .\artifacts\windows-bluetooth-auto-rate-win-x64
+powershell -ExecutionPolicy Bypass -File .\scripts\Publish-Release.ps1
 ```
 
 ## 主要依赖

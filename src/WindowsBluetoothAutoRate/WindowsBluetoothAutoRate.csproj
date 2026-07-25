@@ -17,7 +17,7 @@
     <PublishSingleFile>false</PublishSingleFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
     <AssemblyName>WindowsBluetoothAutoRate</AssemblyName>
     <Description>按设备记忆并在连接时应用 Windows 默认音频格式。</Description>
   </PropertyGroup>
@@ -87,5 +87,19 @@
       DestinationFolder="$(PublishDir)"
       SkipUnchangedFiles="true"
       Condition="'@(WinUiPublishResource)' != ''" />
+  </Target>
+
+  <Target
+    Name="RemoveUnsupportedWinUiLanguages"
+    AfterTargets="CopyWinUiResourcesToPublishDirectory">
+    <ItemGroup>
+      <UnsupportedWinUiMui
+        Include="$(PublishDir)*\Microsoft.ui.xaml.dll.mui;$(PublishDir)*\Microsoft.UI.Xaml.Phone.dll.mui"
+        Exclude="$(PublishDir)zh-CN\*;$(PublishDir)zh-TW\*;$(PublishDir)en-us\*;$(PublishDir)ja-JP\*" />
+      <UnsupportedWinUiLanguageDirectory
+        Include="@(UnsupportedWinUiMui->'%(RootDir)%(Directory)')" />
+    </ItemGroup>
+    <Delete Files="@(UnsupportedWinUiMui)" />
+    <RemoveDir Directories="@(UnsupportedWinUiLanguageDirectory)" />
   </Target>
 </Project>
