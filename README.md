@@ -33,13 +33,13 @@
 设置文件：
 
 ```text
-%LOCALAPPDATA%\MurasameGenos\WindowsBluetoothAutoRate\settings.json
+%LOCALAPPDATA%\WindowsBluetoothAutoRate\settings.json
 ```
 
 日志文件位于同一目录：
 
 ```text
-%LOCALAPPDATA%\MurasameGenos\WindowsBluetoothAutoRate\app.log
+%LOCALAPPDATA%\WindowsBluetoothAutoRate\app.log
 ```
 
 开机启动需要在当前用户的 `Run` 注册表项中登记程序路径；关闭开机启动或执行“重置全部设置”会删除该值。

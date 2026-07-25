@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.Windows.Storage;
 using Microsoft.Win32;
 
 namespace WindowsBluetoothAutoRate;
@@ -198,19 +197,10 @@ internal static class SettingsStore
 
     private static string GetDataDirectory()
     {
-        try
-        {
-            return ApplicationData
-                .GetForUnpackaged("MurasameGenos", "WindowsBluetoothAutoRate")
-                .LocalPath;
-        }
-        catch
-        {
-            return Path.Combine(
-                Environment.GetFolderPath(
-                    Environment.SpecialFolder.LocalApplicationData),
-                "WindowsBluetoothAutoRate");
-        }
+        return Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData),
+            "WindowsBluetoothAutoRate");
     }
 
     private static string GetStartupExecutablePath()
