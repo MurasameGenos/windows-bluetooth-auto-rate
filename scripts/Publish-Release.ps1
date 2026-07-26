@@ -56,6 +56,7 @@ $requiredFiles = @(
     (Join-Path $applicationRoot 'App.xbf'),
     (Join-Path $applicationRoot 'MainPage.xbf'),
     (Join-Path $applicationRoot 'MainWindow.xbf'),
+    (Join-Path $applicationRoot 'TrayIconResources.xbf'),
     (Join-Path $applicationRoot 'WindowsBluetoothAutoRate.pri')
 )
 foreach ($requiredFile in $requiredFiles) {

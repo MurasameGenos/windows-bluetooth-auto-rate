@@ -32,11 +32,20 @@
                     TextWrapping="Wrap" />
             </StackPanel>
 
-            <ToggleSwitch
-                x:Name="StartupToggle"
+            <StackPanel
                 Grid.Column="1"
-                Header="开机启动"
-                Toggled="StartupToggle_Toggled" />
+                Orientation="Horizontal"
+                Spacing="16">
+                <ToggleSwitch
+                    x:Name="StartupToggle"
+                    Header="开机启动"
+                    Toggled="StartupToggle_Toggled" />
+                <ToggleSwitch
+                    x:Name="SilentStartupToggle"
+                    Header="静默启动"
+                    ToolTipService.ToolTip="开机后只驻留系统托盘，不显示主窗口"
+                    Toggled="SilentStartupToggle_Toggled" />
+            </StackPanel>
         </Grid>
 
         <InfoBar

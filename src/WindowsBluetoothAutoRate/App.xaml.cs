@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Threading;
+using H.NotifyIcon;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 
 namespace WindowsBluetoothAutoRate;
 
@@ -13,6 +15,9 @@ public partial class App : Application
         new(StringComparer.Ordinal);
     private Mutex? _mutex;
     private AudioDeviceWatcher? _watcher;
+    private TaskbarIcon? _trayIcon;
+    private XamlUICommand? _showWindowCommand;
+    private XamlUICommand? _exitApplicationCommand;
 
     public App()
     {
@@ -32,25 +37,96 @@ public partial class App : Application
             return;
         }
 
-        MainWindow = new MainWindow();
-        MainWindow.Activate();
-        StartDeviceWatcher();
-
-        if (args.Arguments.Contains("--background", StringComparison.OrdinalIgnoreCase))
+        var startInBackground = Environment.GetCommandLineArgs().Any(
+            argument => string.Equals(
+                argument,
+                "--background",
+                StringComparison.OrdinalIgnoreCase));
+        try
         {
-            MainWindow.HideToTray();
+            SettingsStore.RefreshStartupRegistration();
         }
+        catch (Exception exception)
+        {
+            AppLog.Write($"刷新开机启动设置失败：{exception.Message}");
+        }
+
+        InitializeTrayIcon();
+        if (startInBackground)
+        {
+            AppLog.Write("已静默启动，不创建主窗口。");
+        }
+        else
+        {
+            ShowMainWindow();
+        }
+
+        StartDeviceWatcher();
     }
 
     internal void Shutdown()
     {
         _watcher?.Dispose();
         _watcher = null;
+        if (_showWindowCommand is not null)
+        {
+            _showWindowCommand.ExecuteRequested -=
+                ShowWindowCommand_ExecuteRequested;
+            _showWindowCommand = null;
+        }
+
+        if (_exitApplicationCommand is not null)
+        {
+            _exitApplicationCommand.ExecuteRequested -=
+                ExitApplicationCommand_ExecuteRequested;
+            _exitApplicationCommand = null;
+        }
+
+        _trayIcon?.Dispose();
+        _trayIcon = null;
         MainWindow?.ClosePermanently();
         MainWindow = null;
         _mutex?.Dispose();
         _mutex = null;
         Exit();
+    }
+
+    private void InitializeTrayIcon()
+    {
+        _showWindowCommand = (XamlUICommand)Resources["ShowWindowCommand"];
+        _showWindowCommand.ExecuteRequested += ShowWindowCommand_ExecuteRequested;
+        _exitApplicationCommand =
+            (XamlUICommand)Resources["ExitApplicationCommand"];
+        _exitApplicationCommand.ExecuteRequested +=
+            ExitApplicationCommand_ExecuteRequested;
+        _trayIcon = (TaskbarIcon)Resources["TrayIcon"];
+        _trayIcon.ForceCreate();
+    }
+
+    private void ShowWindowCommand_ExecuteRequested(
+        object? sender,
+        ExecuteRequestedEventArgs args)
+    {
+        ShowMainWindow();
+    }
+
+    private void ExitApplicationCommand_ExecuteRequested(
+        object? sender,
+        ExecuteRequestedEventArgs args)
+    {
+        Shutdown();
+    }
+
+    private void ShowMainWindow()
+    {
+        if (MainWindow is null)
+        {
+            MainWindow = new MainWindow();
+            MainWindow.Activate();
+            return;
+        }
+
+        MainWindow.ShowFromTray();
     }
 
     private void StartDeviceWatcher()

@@ -5,7 +5,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tb="using:H.NotifyIcon"
     Title="Windows 蓝牙音频自动格式"
     mc:Ignorable="d">
 
@@ -29,24 +28,5 @@
         </TitleBar>
 
         <Frame x:Name="RootFrame" Grid.Row="1" />
-
-        <tb:TaskbarIcon
-            x:Name="TrayIcon"
-            IconSource="/Assets/AppIcon.ico"
-            LeftClickCommand="{x:Bind ShowWindowCommand}"
-            NoLeftClickDelay="True"
-            ToolTipText="Windows 蓝牙音频自动格式">
-            <tb:TaskbarIcon.ContextFlyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem
-                        Command="{x:Bind ShowWindowCommand}"
-                        Text="打开设置" />
-                    <MenuFlyoutSeparator />
-                    <MenuFlyoutItem
-                        Command="{x:Bind ExitCommand}"
-                        Text="退出" />
-                </MenuFlyout>
-            </tb:TaskbarIcon.ContextFlyout>
-        </tb:TaskbarIcon>
     </Grid>
 </Window>

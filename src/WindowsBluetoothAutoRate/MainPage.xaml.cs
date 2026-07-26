@@ -22,6 +22,8 @@ public sealed partial class MainPage : Page
     {
         _loadingStartupSetting = true;
         StartupToggle.IsOn = SettingsStore.IsStartupEnabled();
+        SilentStartupToggle.IsOn = SettingsStore.IsSilentStartupEnabled();
+        SilentStartupToggle.IsEnabled = StartupToggle.IsOn;
         _loadingStartupSetting = false;
         await LoadDevicesAsync();
     }
@@ -153,6 +155,8 @@ public sealed partial class MainPage : Page
         SettingsStore.ResetAll();
         _loadingStartupSetting = true;
         StartupToggle.IsOn = false;
+        SilentStartupToggle.IsOn = true;
+        SilentStartupToggle.IsEnabled = false;
         _loadingStartupSetting = false;
         await LoadDevicesAsync();
         SetStatus("全部设置已重置。当前连接设备已重新登记。", InfoBarSeverity.Success);
@@ -168,6 +172,7 @@ public sealed partial class MainPage : Page
         try
         {
             SettingsStore.SetStartupEnabled(StartupToggle.IsOn);
+            SilentStartupToggle.IsEnabled = StartupToggle.IsOn;
             SetStatus(
                 StartupToggle.IsOn ? "已启用开机启动。" : "已关闭开机启动。",
                 InfoBarSeverity.Success);
@@ -176,8 +181,34 @@ public sealed partial class MainPage : Page
         {
             _loadingStartupSetting = true;
             StartupToggle.IsOn = !StartupToggle.IsOn;
+            SilentStartupToggle.IsEnabled = StartupToggle.IsOn;
             _loadingStartupSetting = false;
             SetStatus($"修改开机启动失败：{exception.Message}", InfoBarSeverity.Error);
+        }
+    }
+
+    private void SilentStartupToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (_loadingStartupSetting)
+        {
+            return;
+        }
+
+        try
+        {
+            SettingsStore.SetSilentStartupEnabled(SilentStartupToggle.IsOn);
+            SetStatus(
+                SilentStartupToggle.IsOn
+                    ? "已启用静默启动；开机后只驻留系统托盘。"
+                    : "已关闭静默启动；开机后会显示主窗口。",
+                InfoBarSeverity.Success);
+        }
+        catch (Exception exception)
+        {
+            _loadingStartupSetting = true;
+            SilentStartupToggle.IsOn = !SilentStartupToggle.IsOn;
+            _loadingStartupSetting = false;
+            SetStatus($"修改静默启动失败：{exception.Message}", InfoBarSeverity.Error);
         }
     }
 

@@ -1,19 +1,17 @@
-using System.Windows.Input;
-using H.NotifyIcon;
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 
 namespace WindowsBluetoothAutoRate;
 
 public sealed partial class MainWindow : Window
 {
+    private const int HideWindow = 0;
+    private const int ShowWindowNormally = 5;
+
     private bool _allowClose;
 
     public MainWindow()
     {
-        ShowWindowCommand = new DelegateCommand(ShowFromTray);
-        ExitCommand = new DelegateCommand(() =>
-            ((App)Application.Current).Shutdown());
-
         InitializeComponent();
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
@@ -21,28 +19,26 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1120, 720));
         RootFrame.Navigate(typeof(MainPage));
         Closed += MainWindow_Closed;
-        TrayIcon.ForceCreate();
     }
-
-    public ICommand ShowWindowCommand { get; }
-
-    public ICommand ExitCommand { get; }
 
     public void ShowFromTray()
     {
-        this.Show();
+        ShowWindow(
+            WinRT.Interop.WindowNative.GetWindowHandle(this),
+            ShowWindowNormally);
         Activate();
     }
 
     public void HideToTray()
     {
-        this.Hide();
+        ShowWindow(
+            WinRT.Interop.WindowNative.GetWindowHandle(this),
+            HideWindow);
     }
 
     public void ClosePermanently()
     {
         _allowClose = true;
-        TrayIcon.Dispose();
         Close();
     }
 
@@ -56,4 +52,7 @@ public sealed partial class MainWindow : Window
         args.Handled = true;
         HideToTray();
     }
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr window, int command);
 }
