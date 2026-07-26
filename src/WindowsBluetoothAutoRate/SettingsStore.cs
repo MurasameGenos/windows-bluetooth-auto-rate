@@ -15,6 +15,11 @@ internal static class SettingsStore
     public const string StartupRegistryPath =
         @"Software\Microsoft\Windows\CurrentVersion\Run";
     public const string StartupValueName = "WindowsBluetoothAutoRate";
+    private static readonly string[] StartupApprovedRegistryPaths =
+    [
+        @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run",
+        @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32"
+    ];
 
     private static readonly object SyncRoot = new();
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -154,8 +159,8 @@ internal static class SettingsStore
         {
             var data = Load();
             data.StartWithWindows = enabled;
-            Save(data);
             UpdateStartupRegistration(data);
+            Save(data);
         }
     }
 
@@ -165,8 +170,8 @@ internal static class SettingsStore
         {
             var data = Load();
             data.StartSilently = enabled;
-            Save(data);
             UpdateStartupRegistration(data);
+            Save(data);
         }
     }
 
@@ -174,7 +179,11 @@ internal static class SettingsStore
     {
         lock (SyncRoot)
         {
-            UpdateStartupRegistration(Load());
+            var data = Load();
+            if (UpdateStartupRegistration(data))
+            {
+                Save(data);
+            }
         }
     }
 
@@ -191,6 +200,7 @@ internal static class SettingsStore
                 StartupRegistryPath,
                 writable: true);
             run?.DeleteValue(StartupValueName, throwOnMissingValue: false);
+            DeleteStartupApprovalCache();
         }
     }
 
@@ -244,7 +254,7 @@ internal static class SettingsStore
             : executable;
     }
 
-    private static void UpdateStartupRegistration(AppSettings settings)
+    private static bool UpdateStartupRegistration(AppSettings settings)
     {
         using var run = Registry.CurrentUser.CreateSubKey(
             StartupRegistryPath,
@@ -252,15 +262,60 @@ internal static class SettingsStore
         if (!settings.StartWithWindows)
         {
             run.DeleteValue(StartupValueName, throwOnMissingValue: false);
-            return;
+            DeleteStartupApprovalCache();
+            if (settings.RegisteredStartupExecutablePath is null)
+            {
+                return false;
+            }
+
+            settings.RegisteredStartupExecutablePath = null;
+            return true;
         }
 
         var executable = GetStartupExecutablePath();
         var arguments = settings.StartSilently ? " --background" : string.Empty;
+        var command = $"\"{executable}\"{arguments}";
+        var registeredCommand = run.GetValue(StartupValueName) as string;
+        var executableMoved = !string.Equals(
+            settings.RegisteredStartupExecutablePath,
+            executable,
+            StringComparison.OrdinalIgnoreCase);
+        var commandChanged = !string.Equals(
+            registeredCommand,
+            command,
+            StringComparison.OrdinalIgnoreCase);
+
+        if (executableMoved || commandChanged)
+        {
+            // Task Manager retains an approval record under the startup entry name.
+            // Recreate both records after a move so it does not keep presenting the
+            // old executable location. The setting explicitly says startup is enabled,
+            // so clearing a stale disabled-state record is intentional here.
+            run.DeleteValue(StartupValueName, throwOnMissingValue: false);
+            DeleteStartupApprovalCache();
+        }
+
         run.SetValue(
             StartupValueName,
-            $"\"{executable}\"{arguments}",
+            command,
             RegistryValueKind.String);
+
+        if (!executableMoved)
+        {
+            return false;
+        }
+
+        settings.RegisteredStartupExecutablePath = executable;
+        return true;
+    }
+
+    private static void DeleteStartupApprovalCache()
+    {
+        foreach (var path in StartupApprovedRegistryPaths)
+        {
+            using var approved = Registry.CurrentUser.OpenSubKey(path, writable: true);
+            approved?.DeleteValue(StartupValueName, throwOnMissingValue: false);
+        }
     }
 
     private static void Save(AppSettings settings)
@@ -461,6 +516,8 @@ internal static class SettingsStore
         public bool StartWithWindows { get; set; }
 
         public bool StartSilently { get; set; } = true;
+
+        public string? RegisteredStartupExecutablePath { get; set; }
 
         public Dictionary<string, StoredDevice> Devices { get; set; } =
             new(StringComparer.Ordinal);

@@ -21,6 +21,6 @@
     <AssemblyName>WindowsBluetoothAutoRate</AssemblyName>
     <RootNamespace>WindowsBluetoothAutoRate.Launcher</RootNamespace>
     <ApplicationIcon>..\WindowsBluetoothAutoRate\Assets\AppIcon.ico</ApplicationIcon>
-    <Version>3.1.0</Version>
+    <Version>3.1.1</Version>
   </PropertyGroup>
 </Project>
